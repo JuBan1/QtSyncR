@@ -38,20 +38,49 @@ void SyncProcess::forceCancel()
     m_process.waitForFinished(100);
 }
 
+void readOutputString(const QString line, long& mib, QString& perc, QString& speed, QString& time) {
+    auto parts = line.split(' ', QString::SkipEmptyParts);
+    auto byteString = parts[0].remove(',');
+    mib = byteString.toLong() / 1024 / 1024;
+    perc = parts[1];
+    speed = parts[2];
+    time = parts[3];
+}
+
 void SyncProcess::onReadStandardOoutput()
 {
-    QStringList l = QString(m_process.readAllStandardOutput()).split('\r');
+    QStringList l = QString(m_process.readAllStandardOutput()).split('\r', QString::SkipEmptyParts);
+    l.removeAll("\n");
 
     if(l.isEmpty())
         return;
 
-    //ui->listWidget->item(0)->setText(l.last());
+    const auto& str = l.last();
+
+    m_lastOutput = str;
+
+    if (!m_timer.hasExpired())
+        return;
+
+
+    long mib;
+    QString perc, speed, time;
+    readOutputString(str, mib, perc, speed, time);
+    emit progress(mib, perc, speed, time);
+
+    m_timer.setRemainingTime(1000);
 }
 
 void SyncProcess::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    size_t taskNo = static_cast<size_t>(std::distance(m_paths.cbegin(), m_iterator))+1;
-    emit taskFinished(taskNo, m_paths.size());
+    m_timer.setRemainingTime(0);
+
+    long mib;
+    QString perc, speed, time;
+    readOutputString(m_lastOutput, mib, perc, speed, time);
+    emit progress(mib, perc, speed, time);
+
+    emit taskFinished(exitCode == 0 && exitStatus == QProcess::NormalExit);
 
     m_iterator++;
     startProcess();
@@ -69,5 +98,12 @@ void SyncProcess::startProcess()
         return;
     }
 
-    m_process.start("sleep", QStringList() << "1.5");
+    QString absSrcPath = m_profile.getSrcPath();
+    QString absDestPath = m_profile.getDestPath();
+    QString absDirPath = *m_iterator;
+    QString relDirPath = absDirPath;
+    relDirPath.remove(0, absSrcPath.length());
+    QString absDirDestPath = absDestPath + relDirPath;
+
+    m_process.start("rsync", QStringList() << "-r" << "--info=progress2"  << absDirPath << absDirDestPath);
 }

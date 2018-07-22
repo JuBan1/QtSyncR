@@ -14,18 +14,23 @@ class ProgressDialog : public QDialog
 	Q_OBJECT
 
 public:
-	explicit ProgressDialog(QWidget *parent = 0);
-	~ProgressDialog();
+    explicit ProgressDialog(QWidget *parent = nullptr);
+    ~ProgressDialog() override;
 
 private:
     void updateStats();
 
-    void onTaskFinished(size_t current, size_t all);
+    void onTaskProgress(long megabytes, QString perc, QString speed, QString time);
+    void onTaskFinished(bool success);
     void onAllFinished();
 
     Ui::ProgressDialog *ui;
 
+    QListWidgetItem* m_currentItem = nullptr;
+
     SyncProcess m_process;
+    size_t m_currentTaskNo;
+    size_t m_totalTasksCount;
 
     // QWidget interface
 protected:

@@ -19,8 +19,12 @@ ProgressDialog::ProgressDialog(QWidget *parent) :
 
     connect(ui->btnClose, &QPushButton::clicked, this, &ProgressDialog::close);
 
+    connect(&m_process, &SyncProcess::progress, this, &ProgressDialog::onTaskProgress);
     connect(&m_process, &SyncProcess::taskFinished, this, &ProgressDialog::onTaskFinished);
     connect(&m_process, &SyncProcess::allFinished, this, &ProgressDialog::onAllFinished);
+
+    m_currentTaskNo = 0;
+    m_totalTasksCount = Profile::getCurrentDirList().getAllPaths().size();
 
     m_process.start();
 
@@ -73,11 +77,25 @@ void ProgressDialog::updateStats()
     ui->lbStatus->setStyleSheet(QString("QLabel { color: %1 }").arg(color.name()));
     ui->lbStatus->setText("<b>"+state+"</b>");
     //ui->lbTasks->setText(QString("%1 / %2").arg(m_currentIndex).arg(m_paths.size()));*/
+
+    ui->lbTasks->setText(QString("%1 / %2").arg(m_currentTaskNo).arg(m_totalTasksCount));
 }
 
-void ProgressDialog::onTaskFinished(size_t current, size_t all)
+void ProgressDialog::onTaskProgress(long megabytes, QString perc, QString speed, QString time)
 {
-    ui->lbTasks->setText(QString("%1 / %2").arg(current).arg(all));
+    if (!m_currentItem)
+        m_currentItem = new QListWidgetItem(ui->listWidget);
+
+    m_currentItem->setText( QString("%1MiB %2 %3 %4").arg(megabytes).arg(perc).arg(speed).arg(time) );
+}
+
+void ProgressDialog::onTaskFinished(bool success)
+{
+    auto status = success ? " - Success" : " - Failed";
+    m_currentItem->setText( m_currentItem->text() + status );
+
+    m_currentItem = nullptr;
+    updateStats();
 }
 
 void ProgressDialog::onAllFinished()

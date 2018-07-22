@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QProcess>
 #include <QString>
+#include <QDeadlineTimer>
 
 #include <vector>
 
@@ -27,8 +28,8 @@ public:
     };
 
 signals:
-    void progress();
-    void taskFinished(size_t currentTask, size_t totalTasks);
+    void progress(long megabytes, QString percentage, QString speed, QString time);
+    void taskFinished(bool success);
     void allFinished();
 
 private slots:
@@ -38,12 +39,15 @@ private slots:
 private:
     void startProcess();
 
+    QString m_lastOutput;
+    QDeadlineTimer m_timer;
     bool m_wantToStop = false;
     const Profile& m_profile;
     std::vector<QString> m_paths;
     std::vector<QString>::const_iterator m_iterator;
 
     QProcess m_process;
+
 };
 
 #endif // SYNCPROCESS_H
