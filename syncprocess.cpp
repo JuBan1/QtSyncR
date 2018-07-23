@@ -86,6 +86,18 @@ void SyncProcess::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatu
     startProcess();
 }
 
+QStringList createRSyncSwitches(const Profile& profile) {
+    QStringList switches;
+    switches << "--delete" << "-r" << "--info=progress2";
+
+    if (profile.getRSyncFlag(Profile::FlagsDryRun)) switches << "-n";
+    if (profile.getRSyncFlag(Profile::FlagArchive)) switches << "-a";
+    if (profile.getRSyncFlag(Profile::FlagCompress)) switches << "-z";
+    if (profile.getRSyncFlag(Profile::FlagSizeOnly)) switches << "--size-only";
+
+    return switches;
+}
+
 void SyncProcess::startProcess()
 {
     if (m_iterator == m_paths.end()) {
@@ -110,5 +122,5 @@ void SyncProcess::startProcess()
     if (absSrcPath == absDirPath)
         absDirPath += '/';
 
-    m_process.start("rsync", QStringList() << "-r" << "--info=progress2"  << absDirPath << absDirDestPath);
+    m_process.start("rsync", createRSyncSwitches(m_profile) << absDirPath << absDirDestPath);
 }

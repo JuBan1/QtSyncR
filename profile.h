@@ -14,6 +14,14 @@ public:
         FileContentsError
     };
 
+    enum RSyncFlag {
+        FlagArchive,    // Preserve symlinks, ownership, ..
+        FlagCompress,   // Compress files before transfer
+        FlagSizeOnly,   // Check files only based on size
+        FlagsDryRun,    // Only simulate changes. This setting won't be saved
+        FLAGS_MAX
+    };
+
 	static Profile& getCurrent() { return s_currentProfile; }
 	static DirList& getCurrentDirList() { return s_currentProfile.getDirList(); }
     static void setCurrent(const Profile& p) { s_currentProfile = p; }
@@ -29,6 +37,9 @@ public:
 	DirList& getDirList() { return m_dirList; }
     const DirList& getDirList() const { return m_dirList; }
 
+    bool getRSyncFlag(RSyncFlag flag) const { return m_rsyncFlags[flag]; }
+    void setRSyncFlag(RSyncFlag flag, bool enabled) { m_rsyncFlags[flag] = enabled; }
+
     void setModified(bool modified);
 	void setSrcPath(const QString& newPath);
 	void setDestPath(const QString& newPath);
@@ -39,6 +50,7 @@ public:
 private:
     static Profile s_currentProfile;
 
+    std::array<bool, FLAGS_MAX> m_rsyncFlags;
     QString m_profileFilePath;
 
     QString m_srcPath;

@@ -36,6 +36,10 @@ private slots:
     void onBtnRunSync();
     void onActionDryRun();
 
+    void onCbUseArchiveClicked();
+    void onCbUseCompressionClicked();
+    void onCbCheckSizeOnlyClicked();
+
 
 
 	void openRecentFileEntry(QString path);

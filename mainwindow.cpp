@@ -30,14 +30,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
     auto ac = new QAction("&Dry-Run");
     ac->setIcon( QIcon::fromTheme("system-run"));
-	ui->btnRunSync->addAction(ac);
+    ui->btnRunSync->addAction(ac);
 
-	connect(ui->btnRunSync, &QToolButton::clicked, this, &MainWindow::onBtnRunSync);
-	connect(ac, &QAction::triggered, this, &MainWindow::onActionDryRun);
+    connect(ui->btnRunSync, &QToolButton::clicked, this, &MainWindow::onBtnRunSync);
+    connect(ac, &QAction::triggered, this, &MainWindow::onActionDryRun);
 
-	connect(m_dirTree, &DirTree::itemCheckChanged, this, &MainWindow::updateUI);
+    connect(m_dirTree, &DirTree::itemCheckChanged, this, &MainWindow::updateUI);
 
-	connect(ui->actionNew_Profile, &QAction::triggered, this, &MainWindow::onActionNewProfileClicked);
+    connect(ui->actionNew_Profile, &QAction::triggered, this, &MainWindow::onActionNewProfileClicked);
     connect(ui->actionLoad_Profile, &QAction::triggered, this, &MainWindow::onActionLoadProfileClicked);
     connect(ui->actionSave_Profile, &QAction::triggered, this, &MainWindow::onActionSaveProfileClicked);
     connect(ui->actionSave_Profile_As, &QAction::triggered, this, &MainWindow::onActionSaveAsClicked);
@@ -67,7 +67,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::onActionNewProfileClicked()
 {
-	loadProfile(Profile());
+    loadProfile(Profile());
 }
 
 void MainWindow::onActionLoadProfileClicked() {
@@ -85,7 +85,7 @@ void MainWindow::onActionLoadProfileClicked() {
     auto filePath = files.first();
     setLastSelectedDir(QFileInfo(filePath).path());
 
-	loadProfile(filePath);
+    loadProfile(filePath);
 }
 
 void MainWindow::onActionSaveProfileClicked() {
@@ -122,7 +122,7 @@ void MainWindow::onActionSaveAsClicked() {
     auto filePath = files.first();
     setLastSelectedDir(QFileInfo(filePath).path());
 
-	auto& p = Profile::getCurrent();
+    auto& p = Profile::getCurrent();
 
     p.saveToFile(filePath);
     auto result = p.saveToFile(p.getProfileFilePath());
@@ -134,7 +134,7 @@ void MainWindow::onActionSaveAsClicked() {
     p.setProfileFilePath(filePath);
     p.setModified(false);
 
-	addToRecentList(filePath);
+    addToRecentList(filePath);
     updateUI();
 }
 
@@ -156,26 +156,36 @@ void MainWindow::onActionReportABugClicked()
 
 void MainWindow::openRecentFileEntry(QString path)
 {
-	loadProfile(path);
+    loadProfile(path);
 }
 
 void MainWindow::onBtnRunSync()
 {
-	/*QProcess p;
-	p.start("rsync", QStringList() << "-nr" << "--info=progress2"  << "/home/s3rius/Downloads" << "/home/s3rius/Testme/");
-	p.waitForFinished();
-
-	qDebug() << p.readAllStandardOutput();*/
-
-
-	ProgressDialog d;
-	d.exec();
-
+    ProgressDialog d;
+    Profile::getCurrent().setRSyncFlag(Profile::FlagsDryRun, false);
+    d.exec();
 }
 
 void MainWindow::onActionDryRun()
 {
+    ProgressDialog d;
+    Profile::getCurrent().setRSyncFlag(Profile::FlagsDryRun, true);
+    d.exec();
+}
 
+void MainWindow::onCbUseArchiveClicked()
+{
+    Profile::getCurrent().setRSyncFlag(Profile::FlagArchive, ui->cbUseArchive->isChecked());
+}
+
+void MainWindow::onCbUseCompressionClicked()
+{
+    Profile::getCurrent().setRSyncFlag(Profile::FlagCompress, ui->cbUseCompression->isChecked());
+}
+
+void MainWindow::onCbCheckSizeOnlyClicked()
+{
+    Profile::getCurrent().setRSyncFlag(Profile::FlagSizeOnly, ui->cbCheckFileSize->isChecked());
 }
 
 void MainWindow::updateUI()
@@ -186,7 +196,7 @@ void MainWindow::updateUI()
     QString suffix = p.isModified() ? "*" : "";
     setWindowTitle( "QtSyncR - " + (path.isEmpty() ? "Unsaved Profile*" : (path + suffix)) );
 
-	//ui->btnRunSync->setEnabled( !p.getSrcPath().isEmpty() );
+    //ui->btnRunSync->setEnabled( !p.getSrcPath().isEmpty() );
 }
 
 void MainWindow::updateRecentList()
@@ -202,9 +212,9 @@ void MainWindow::updateRecentList()
 
     ui->menuLoad_Recent->clear();
     for (const auto& path : recent) {
-		auto ac = new QAction(path);
-		connect(ac, &QAction::triggered, this, [this, path]() { openRecentFileEntry(path); });
-		ui->menuLoad_Recent->addAction(ac);
+        auto ac = new QAction(path);
+        connect(ac, &QAction::triggered, this, [this, path]() { openRecentFileEntry(path); });
+        ui->menuLoad_Recent->addAction(ac);
     }
     ui->menuLoad_Recent->addSeparator();
     ui->menuLoad_Recent->addAction(ui->actionClear_Recent_List);
@@ -223,53 +233,53 @@ void MainWindow::addToRecentList(const QString& path)
 
     s.setValue("recent", list);
 
-	updateRecentList();
+    updateRecentList();
 }
 
 void MainWindow::removeFromRecentList(const QString& path)
 {
-	QSettings s;
-	auto list = s.value("recent").toStringList();
+    QSettings s;
+    auto list = s.value("recent").toStringList();
 
-	list.removeAll(path);
-	s.setValue("recent", list);
-	updateRecentList();
+    list.removeAll(path);
+    s.setValue("recent", list);
+    updateRecentList();
 }
 
 bool MainWindow::loadProfile(const QString& path)
 {
-	Profile p;
-	auto result = Profile::loadFromFile(path, p);
+    Profile p;
+    auto result = Profile::loadFromFile(path, p);
 
 
-	if (result != Profile::Success) {
-		QString errorString;
-		if (result == Profile::FileContentsError) errorString = "Malformed file contents.";
-		else if (result == Profile::FileReadWriteError) errorString = "Could not read/write file.";
-		else assert(false); // Need to add new error cases here
+    if (result != Profile::Success) {
+        QString errorString;
+        if (result == Profile::FileContentsError) errorString = "Malformed file contents.";
+        else if (result == Profile::FileReadWriteError) errorString = "Could not read/write file.";
+        else assert(false); // Need to add new error cases here
 
-		QMessageBox::critical(this, "Error", QString("An error occured during execution:\n  %1").arg(errorString));
-		return false;
-	}
+        QMessageBox::critical(this, "Error", QString("An error occured during execution:\n  %1").arg(errorString));
+        return false;
+    }
 
-	loadProfile(p);
-	addToRecentList(path);
+    loadProfile(p);
+    addToRecentList(path);
 
-	ui->leSourceDir->setText(p.getSrcPath());
-	ui->leDestDir->setText(p.getDestPath());
-	m_dirTree->setRootPath(p.getSrcPath());
+    ui->leSourceDir->setText(p.getSrcPath());
+    ui->leDestDir->setText(p.getDestPath());
+    m_dirTree->setRootPath(p.getSrcPath());
 
-	return true;
+    return true;
 }
 
 void MainWindow::loadProfile(const Profile& profile)
 {
-	Profile::setCurrent(profile);
-	updateUI();
+    Profile::setCurrent(profile);
+    updateUI();
 
-	ui->leSourceDir->setText(profile.getSrcPath());
-	ui->leDestDir->setText(profile.getDestPath());
-	m_dirTree->setRootPath(profile.getSrcPath());
+    ui->leSourceDir->setText(profile.getSrcPath());
+    ui->leDestDir->setText(profile.getDestPath());
+    m_dirTree->setRootPath(profile.getSrcPath());
 }
 
 QString MainWindow::getLastSelectedDir()
@@ -306,34 +316,34 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::on_btnSelectSourceDir_clicked()
 {
-	const Profile& p = Profile::getCurrent();
-	const auto startPath = p.getSrcPath().isEmpty() ? "~" : p.getSrcPath();
+    const Profile& p = Profile::getCurrent();
+    const auto startPath = p.getSrcPath().isEmpty() ? "~" : p.getSrcPath();
 
     QFileDialog d;
     d.setFileMode(QFileDialog::DirectoryOnly);
-	d.setDirectory(startPath);
+    d.setDirectory(startPath);
     d.exec();
 
-	const auto& files = d.selectedFiles();
+    const auto& files = d.selectedFiles();
 
-	if (files.isEmpty())
-		return;
+    if (files.isEmpty())
+        return;
 
-	auto newSrcPath = files.first();
+    auto newSrcPath = files.first();
 
-	if (newSrcPath == p.getSrcPath())
-		return;
+    if (newSrcPath == p.getSrcPath())
+        return;
 
-	if (!Profile::getCurrentDirList().getAllPaths().empty()) {
-		auto result = QMessageBox::information(this, "Changing Source Directory",
-								 "Changing the source directory will clear all selections. Do you want to continue?",
-								 QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Cancel);
+    if (!Profile::getCurrentDirList().getAllPaths().empty()) {
+        auto result = QMessageBox::information(this, "Changing Source Directory",
+                                 "Changing the source directory will clear all selections. Do you want to continue?",
+                                 QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Cancel);
 
-		if (result == QMessageBox::Cancel)
-			return;
-	}
+        if (result == QMessageBox::Cancel)
+            return;
+    }
 
-	Profile::getCurrent().setSrcPath(newSrcPath);
+    Profile::getCurrent().setSrcPath(newSrcPath);
 
     ui->leSourceDir->setText(newSrcPath);
     m_dirTree->setRootPath(newSrcPath);
@@ -352,7 +362,7 @@ void MainWindow::on_btnSelectDestDir_clicked()
 
     auto dest = d.selectedFiles().first();
 
-	Profile::getCurrent().setDestPath(dest);
+    Profile::getCurrent().setDestPath(dest);
 
     ui->leDestDir->setText(dest);
 
