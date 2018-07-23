@@ -50,7 +50,7 @@ public:
 private:
     static Profile s_currentProfile;
 
-    std::array<bool, FLAGS_MAX> m_rsyncFlags;
+    std::array<bool, FLAGS_MAX> m_rsyncFlags = {true, false, false, false};
     QString m_profileFilePath;
 
     QString m_srcPath;

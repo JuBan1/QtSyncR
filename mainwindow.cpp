@@ -202,7 +202,7 @@ void MainWindow::updateUI()
 
     const auto& path = p.getProfileFilePath();
     QString suffix = p.isModified() ? "*" : "";
-    setWindowTitle( "QtSyncR - " + (path.isEmpty() ? "Unsaved Profile*" : (path + suffix)) );
+    setWindowTitle( "QtSyncR - " + (path.isEmpty() ? "Unsaved Profile" : path) + suffix );
 
     //ui->btnRunSync->setEnabled( !p.getSrcPath().isEmpty() );
 }

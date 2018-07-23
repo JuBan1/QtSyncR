@@ -117,5 +117,4 @@ void Profile::setProfileFilePath(const QString& newPath) {
 
 Profile::Profile()
 {
-    m_rsyncFlags[FlagArchive] = true;
 }
