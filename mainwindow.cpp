@@ -1,8 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include <set>
-
 #include <QLineEdit>
 #include <QToolButton>
 
@@ -12,14 +10,12 @@
 #include <QMenu>
 #include <QSettings>
 #include <QMessageBox>
-#include <QProcess>
 #include <QCloseEvent>
 #include <QDesktopServices>
 
 #include "globals.h"
 #include "aboutdialog.h"
 #include "progressdialog.h"
-#include "profile.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -31,6 +27,9 @@ MainWindow::MainWindow(QWidget *parent) :
     auto ac = new QAction("&Dry-Run");
     ac->setIcon( QIcon::fromTheme("system-run"));
     ui->btnRunSync->addAction(ac);
+
+    connect(ui->btnSelectSourceDir, &QToolButton::clicked, this, &MainWindow::onBtnSelectSourceDirClicked);
+    connect(ui->btnSelectDestDir, &QToolButton::clicked, this, &MainWindow::onBtnSelectDestDirClicked);
 
     connect(ui->btnRunSync, &QToolButton::clicked, this, &MainWindow::onBtnRunSync);
     connect(ac, &QAction::triggered, this, &MainWindow::onActionDryRun);
@@ -326,7 +325,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 }
 
 
-void MainWindow::on_btnSelectSourceDir_clicked()
+void MainWindow::onBtnSelectSourceDirClicked()
 {
     const Profile& p = Profile::getCurrent();
     const auto startPath = p.getSrcPath().isEmpty() ? "~" : p.getSrcPath();
@@ -363,14 +362,12 @@ void MainWindow::on_btnSelectSourceDir_clicked()
     updateUI();
 }
 
-void MainWindow::on_btnSelectDestDir_clicked()
+void MainWindow::onBtnSelectDestDirClicked()
 {
     QFileDialog d;
     d.setFileMode(QFileDialog::DirectoryOnly);
     d.setDirectory(Profile::getCurrent().getDestPath());
     d.exec();
-
-    qDebug() << d.selectedFiles();
 
     auto dest = d.selectedFiles().first();
 

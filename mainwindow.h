@@ -15,14 +15,12 @@ class MainWindow : public QMainWindow
 	Q_OBJECT
 
 public:
-	explicit MainWindow(QWidget *parent = 0);
-	~MainWindow();
+    explicit MainWindow(QWidget *parent = nullptr);
+    ~MainWindow() override;
 
 private slots:
-	void on_btnSelectSourceDir_clicked();
-
-	void on_btnSelectDestDir_clicked();
-
+    void onBtnSelectSourceDirClicked();
+    void onBtnSelectDestDirClicked();
 
 	void onActionNewProfileClicked();
     void onActionLoadProfileClicked();
@@ -40,10 +38,10 @@ private slots:
     void onCbUseCompressionClicked();
     void onCbCheckSizeOnlyClicked();
 
-
-
 	void openRecentFileEntry(QString path);
 
+protected:
+    void closeEvent(QCloseEvent *event) override;
 
 private:
     void updateUI();
@@ -59,10 +57,6 @@ private:
 
 	Ui::MainWindow *ui;
     DirTree* m_dirTree;
-
-    // QWidget interface
-protected:
-    void closeEvent(QCloseEvent *event) override;
 };
 
 #endif // MAINWINDOW_H
