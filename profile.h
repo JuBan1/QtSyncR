@@ -38,7 +38,7 @@ public:
     const DirList& getDirList() const { return m_dirList; }
 
     bool getRSyncFlag(RSyncFlag flag) const { return m_rsyncFlags[flag]; }
-    void setRSyncFlag(RSyncFlag flag, bool enabled) { m_rsyncFlags[flag] = enabled; }
+    void setRSyncFlag(RSyncFlag flag, bool enabled);
 
     void setModified(bool modified);
 	void setSrcPath(const QString& newPath);

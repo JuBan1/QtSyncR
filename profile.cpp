@@ -22,6 +22,10 @@ Profile::Result Profile::loadFromFile(const QString& path, Profile& profile)
     auto src = obj["src"].toString();
     auto dest = obj["dest"].toString();
 
+    auto flagArchive = obj["flagArchive"].toBool(false);
+    auto flagCompress = obj["flagCompress"].toBool(false);
+    auto flagSizeOnly = obj["flagSizeOnly"].toBool(false);
+
     if (src.isEmpty()) return Result::FileContentsError;
 
     QStringList l;
@@ -33,6 +37,10 @@ Profile::Result Profile::loadFromFile(const QString& path, Profile& profile)
     p.m_dirList.set(src, l);
     p.m_srcPath = src;
     p.m_destPath = dest;
+    p.setRSyncFlag(FlagArchive, flagArchive);
+    p.setRSyncFlag(FlagCompress, flagCompress);
+    p.setRSyncFlag(FlagSizeOnly, flagSizeOnly);
+    p.setModified(false);
 
     profile = p;
 
@@ -57,6 +65,10 @@ Profile::Result Profile::saveToFile(const QString &path) const
     obj["src"] = m_srcPath;
     obj["dest"] = m_destPath;
 
+    obj["flagArchive"] = getRSyncFlag(FlagArchive);
+    obj["flagCompress"] = getRSyncFlag(FlagCompress);
+    obj["flagSizeOnly"] = getRSyncFlag(FlagSizeOnly);
+
     doc.setObject(obj);
 
     if (file.write(doc.toJson()) <= 0)
@@ -67,6 +79,14 @@ Profile::Result Profile::saveToFile(const QString &path) const
 
 bool Profile::isModified() const {
 	return m_modified || m_dirList.isModified();
+}
+
+void Profile::setRSyncFlag(Profile::RSyncFlag flag, bool enabled) {
+    if (m_rsyncFlags[flag] == enabled)
+        return;
+
+    m_rsyncFlags[flag] = enabled;
+    m_modified = true;
 }
 
 void Profile::setModified(bool modified) {
