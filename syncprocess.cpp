@@ -105,5 +105,10 @@ void SyncProcess::startProcess()
     relDirPath.remove(0, absSrcPath.length());
     QString absDirDestPath = absDestPath + relDirPath;
 
+    // If rsyncing the root directory we need to append a '/' to prevent an additional directory layer
+    // to be created. This is in line with how non-root dirs and files are synced.
+    if (absSrcPath == absDirPath)
+        absDirPath += '/';
+
     m_process.start("rsync", QStringList() << "-r" << "--info=progress2"  << absDirPath << absDirDestPath);
 }
