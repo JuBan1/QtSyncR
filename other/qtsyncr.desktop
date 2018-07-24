@@ -1,0 +1,12 @@
+ 
+[Desktop Entry]
+Encoding=UTF-8
+Name=QtSyncR
+GenericName=Data Backup Utility
+Comment=Qt-based tool for synchronizing files and folders, using RSync.
+Exec=QtSyncR %U
+Temrinal=false
+Type=Application
+StartupNodify=false
+Icon=qtsyncr
+Categories=Utility

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+	<id>qtsyncr.desktop</id>
+	<metadata_license>MIT</metadata_license>
+	<project_license>MIT</project_license> 
+	<name>QtSyncR</name>
+	<summary>A graphical backup application with a focus on easy, simple use.</summary>
+	<description>A Qt-based utility for synchronizing files and folders, using RSync as its backend.</description>
+	<categories>
+		<category>Utility</category>
+	</categories>
+	
+	<screenshots>
+		<screenshot type="default">
+			<image>https://image.path.here</image>
+		</screenshot>
+	</screenshots>
+	
+	<developer_name>Julian Bansen</developer_name>
+	<url type="homepage">https://github.com/JuBan1/QtSyncR</url>
+	<url type="bugtracker">https://github.com/JuBan1/QtSyncR/issues</url>
+	<url type="help">https://github.com/JuBan1/QtSyncR/wiki</url>
+</component>
