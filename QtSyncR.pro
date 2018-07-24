@@ -35,7 +35,8 @@ SOURCES += \
     progressdialog.cpp \
     progressitem.cpp \
     syncprocess.cpp \
-    aboutdialog.cpp
+    aboutdialog.cpp \
+    consoleprocess.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -46,7 +47,8 @@ HEADERS += \
     progressitem.h \
     syncprocess.h \
     globals.h \
-    aboutdialog.h
+    aboutdialog.h \
+    consoleprocess.h
 
 FORMS += \
         mainwindow.ui \
