@@ -90,10 +90,10 @@ QStringList createRSyncSwitches(const Profile& profile) {
     QStringList switches;
     switches << "--delete" << "-r" << "--info=progress2";
 
-    if (profile.getRSyncFlag(Profile::FlagsDryRun)) switches << "-n";
-    if (profile.getRSyncFlag(Profile::FlagArchive)) switches << "-a";
-    if (profile.getRSyncFlag(Profile::FlagCompress)) switches << "-z";
-    if (profile.getRSyncFlag(Profile::FlagSizeOnly)) switches << "--size-only";
+    if (profile.getFlag(Profile::FlagsDryRun)) switches << "-n";
+    if (profile.getFlag(Profile::FlagArchive)) switches << "-a";
+    if (profile.getFlag(Profile::FlagCompress)) switches << "-z";
+    if (profile.getFlag(Profile::FlagSizeOnly)) switches << "--size-only";
 
     return switches;
 }

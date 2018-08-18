@@ -38,6 +38,9 @@ private slots:
     void onCbUseCompressionClicked();
     void onCbCheckSizeOnlyClicked();
 
+    void onCbShowFilesClicked(bool checked);
+    void onCbShowHiddenClicked(bool checked);
+
 	void openRecentFileEntry(QString path);
 
 protected:

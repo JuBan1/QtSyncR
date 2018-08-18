@@ -26,6 +26,9 @@ Profile::Result Profile::loadFromFile(const QString& path, Profile& profile)
     auto flagCompress = obj["flagCompress"].toBool(false);
     auto flagSizeOnly = obj["flagSizeOnly"].toBool(false);
 
+    auto showFiles = obj["flagShowFiles"].toBool(true);
+    auto showHidden = obj["flagShowHidden"].toBool(true);
+
     if (src.isEmpty()) return Result::FileContentsError;
 
     QStringList l;
@@ -37,9 +40,11 @@ Profile::Result Profile::loadFromFile(const QString& path, Profile& profile)
     p.m_dirList.set(src, l);
     p.m_srcPath = src;
     p.m_destPath = dest;
-    p.setRSyncFlag(FlagArchive, flagArchive);
-    p.setRSyncFlag(FlagCompress, flagCompress);
-    p.setRSyncFlag(FlagSizeOnly, flagSizeOnly);
+    p.setFlag(FlagArchive, flagArchive);
+    p.setFlag(FlagCompress, flagCompress);
+    p.setFlag(FlagSizeOnly, flagSizeOnly);
+    p.setFlag(FlagShowFiles, showFiles);
+    p.setFlag(FlagShowHidden, showHidden);
     p.setModified(false);
 
     profile = p;
@@ -65,9 +70,11 @@ Profile::Result Profile::saveToFile(const QString &path) const
     obj["src"] = m_srcPath;
     obj["dest"] = m_destPath;
 
-    obj["flagArchive"] = getRSyncFlag(FlagArchive);
-    obj["flagCompress"] = getRSyncFlag(FlagCompress);
-    obj["flagSizeOnly"] = getRSyncFlag(FlagSizeOnly);
+    obj["flagArchive"] = getFlag(FlagArchive);
+    obj["flagCompress"] = getFlag(FlagCompress);
+    obj["flagSizeOnly"] = getFlag(FlagSizeOnly);
+    obj["flagShowFiles"] = getFlag(FlagShowFiles);
+    obj["flagShowHidden"] = getFlag(FlagShowHidden);
 
     doc.setObject(obj);
 
@@ -81,7 +88,7 @@ bool Profile::isModified() const {
 	return m_modified || m_dirList.isModified();
 }
 
-void Profile::setRSyncFlag(Profile::RSyncFlag flag, bool enabled) {
+void Profile::setFlag(Profile::ProfileFlag flag, bool enabled) {
     if (m_rsyncFlags[flag] == enabled)
         return;
 

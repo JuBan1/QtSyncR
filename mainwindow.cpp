@@ -51,7 +51,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->cbUseCompression, &QCheckBox::toggled, this, &MainWindow::onCbUseCompressionClicked);
     connect(ui->cbCheckFileSize, &QCheckBox::toggled, this, &MainWindow::onCbCheckSizeOnlyClicked);
 
-
+    connect(ui->cbShowFiles, &QCheckBox::toggled, this, &MainWindow::onCbShowFilesClicked);
+    connect(ui->cbShowHidden, &QCheckBox::toggled, this, &MainWindow::onCbShowHiddenClicked);
 
     updateRecentList();
 
@@ -166,33 +167,45 @@ void MainWindow::openRecentFileEntry(QString path)
 void MainWindow::onBtnRunSync()
 {
     ProgressDialog d;
-    Profile::getCurrent().setRSyncFlag(Profile::FlagsDryRun, false);
+    Profile::getCurrent().setFlag(Profile::FlagsDryRun, false);
     d.exec();
 }
 
 void MainWindow::onActionDryRun()
 {
     ProgressDialog d;
-    Profile::getCurrent().setRSyncFlag(Profile::FlagsDryRun, true);
+    Profile::getCurrent().setFlag(Profile::FlagsDryRun, true);
     d.exec();
 }
 
 void MainWindow::onCbUseArchiveClicked()
 {
-    Profile::getCurrent().setRSyncFlag(Profile::FlagArchive, ui->cbUseArchive->isChecked());
+    Profile::getCurrent().setFlag(Profile::FlagArchive, ui->cbUseArchive->isChecked());
     updateUI();
 }
 
 void MainWindow::onCbUseCompressionClicked()
 {
-    Profile::getCurrent().setRSyncFlag(Profile::FlagCompress, ui->cbUseCompression->isChecked());
+    Profile::getCurrent().setFlag(Profile::FlagCompress, ui->cbUseCompression->isChecked());
     updateUI();
 }
 
 void MainWindow::onCbCheckSizeOnlyClicked()
 {
-    Profile::getCurrent().setRSyncFlag(Profile::FlagSizeOnly, ui->cbCheckFileSize->isChecked());
+    Profile::getCurrent().setFlag(Profile::FlagSizeOnly, ui->cbCheckFileSize->isChecked());
     updateUI();
+}
+
+void MainWindow::onCbShowFilesClicked(bool checked)
+{
+    Profile::getCurrent().setFlag(Profile::FlagShowFiles, checked);
+    m_dirTree->setShowFiles(checked);
+}
+
+void MainWindow::onCbShowHiddenClicked(bool checked)
+{
+    Profile::getCurrent().setFlag(Profile::FlagShowHidden, checked);
+    m_dirTree->setShowHidden(checked);
 }
 
 void MainWindow::updateUI()
@@ -271,11 +284,6 @@ bool MainWindow::loadProfile(const QString& path)
 
     loadProfile(p);
     addToRecentList(path);
-
-    ui->leSourceDir->setText(p.getSrcPath());
-    ui->leDestDir->setText(p.getDestPath());
-    m_dirTree->setRootPath(p.getSrcPath());
-
     return true;
 }
 
@@ -284,9 +292,12 @@ void MainWindow::loadProfile(const Profile& profile)
     Profile::setCurrent(profile);
     updateUI();
 
-    ui->cbUseArchive->setChecked(profile.getRSyncFlag(Profile::FlagArchive));
-    ui->cbUseCompression->setChecked(profile.getRSyncFlag(Profile::FlagCompress));
-    ui->cbCheckFileSize->setChecked(profile.getRSyncFlag(Profile::FlagSizeOnly));
+    ui->cbUseArchive->setChecked(profile.getFlag(Profile::FlagArchive));
+    ui->cbUseCompression->setChecked(profile.getFlag(Profile::FlagCompress));
+    ui->cbCheckFileSize->setChecked(profile.getFlag(Profile::FlagSizeOnly));
+
+    ui->cbShowFiles->setChecked(profile.getFlag(Profile::FlagShowFiles));
+    ui->cbShowHidden->setChecked(profile.getFlag(Profile::FlagShowHidden));
 
     ui->leSourceDir->setText(profile.getSrcPath());
     ui->leDestDir->setText(profile.getDestPath());

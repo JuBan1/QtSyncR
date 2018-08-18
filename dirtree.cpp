@@ -85,6 +85,8 @@ void populateDirectory(QTreeWidgetItem* item) {
         d->setIcon(0, dirIcon);
         d->setDisabled(disabled);
         d->setChildIndicatorPolicy(QTreeWidgetItem::ShowIndicator);
+        d->setData(0, DirTree::IsDir, true);
+        d->setData(0, DirTree::IsHidden, dir.dirName().startsWith('.'));
     }
 
     QDirIterator filesIt(path,
@@ -106,6 +108,8 @@ void populateDirectory(QTreeWidgetItem* item) {
         d->setIcon(0, iconProvider.icon(fi));
         d->setDisabled(disabled);
         d->setCheckState(0, Profile::getCurrentDirList().getCheckState(filePath));
+        d->setData(0, DirTree::IsDir, false);
+        d->setData(0, DirTree::IsHidden, fi.isHidden());
     }
 
 
@@ -194,7 +198,39 @@ void DirTree::setRootPath(QString path)
     it->setText(1, d.path());
     it->setCheckState(0, Profile::getCurrentDirList().getCheckState(path));
     it->setChildIndicatorPolicy(QTreeWidgetItem::ShowIndicator);
-	m_disableSignals = false;
+    m_disableSignals = false;
+}
+
+void DirTree::updateItemVisibility(QTreeWidgetItem* item)
+{
+    if (!item) return;
+
+    for (int i=0; i<item->childCount(); ++i) {
+        auto* c = item->child(i);
+
+        bool isDir = c->data(0, IsDir).toBool();
+        bool show = m_showFiles || isDir;
+        show &= m_showHidden || !c->data(0, IsHidden).toBool();
+
+        c->setHidden(!show);
+
+        if (isDir && item->isExpanded())
+            updateItemVisibility(c);
+    }
+}
+
+void DirTree::setShowFiles(bool show)
+{
+    if (m_showFiles == show) return;
+    m_showFiles = show;
+    updateItemVisibility(m_tree->topLevelItem(0));
+}
+
+void DirTree::setShowHidden(bool show)
+{
+    if (m_showHidden == show) return;
+    m_showHidden = show;
+    updateItemVisibility(m_tree->topLevelItem(0));
 }
 
 void DirTree::onItemExpanded(QTreeWidgetItem* item)
@@ -204,6 +240,7 @@ void DirTree::onItemExpanded(QTreeWidgetItem* item)
 
     m_disableSignals = true;
     populateDirectory(item);
+    updateItemVisibility(item);
     m_disableSignals = false;
 }
 
