@@ -106,13 +106,18 @@ void SyncProcess::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatu
 {
     m_timer.setRemainingTime(0);
 
-    long mib=0;
-    QString perc, speed, time;
-    readOutputString(m_lastOutput, mib, perc, speed, time);
-    emit progress(mib, perc, speed, time);
+    const bool success = exitCode == 0 && exitStatus == QProcess::NormalExit;
+
+    // There might be no output if the process failed.
+    if (success) {
+        long mib=0;
+        QString perc, speed, time;
+        readOutputString(m_lastOutput, mib, perc, speed, time);
+        emit progress(mib, perc, speed, time);
+    }
 
     const QString exitString = exitStatus == QProcess::NormalExit ? rsyncExitCodeToString(exitCode) : "Process execution failed";
-    emit taskFinished(exitCode == 0 && exitStatus == QProcess::NormalExit, exitString);
+    emit taskFinished(success, exitString);
 
     m_iterator++;
     startProcess();

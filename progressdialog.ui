@@ -131,7 +131,7 @@
      <item>
       <widget class="QPushButton" name="btnClose">
        <property name="text">
-        <string>Close</string>
+        <string>Abort</string>
        </property>
        <property name="icon">
         <iconset theme="application-exit">

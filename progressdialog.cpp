@@ -99,7 +99,8 @@ void ProgressDialog::onTaskFinished(bool /*success*/, QString exitString)
 
 void ProgressDialog::onAllFinished()
 {
-
+    ui->lbStatus->setText("<b>Status: Finished</b>");
+    ui->btnClose->setText("Close"); // Before that: Abort
 }
 
 void ProgressDialog::closeEvent(QCloseEvent *event)
