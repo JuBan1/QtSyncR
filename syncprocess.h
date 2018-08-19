@@ -29,7 +29,7 @@ public:
 
 signals:
     void progress(long megabytes, QString percentage, QString speed, QString time);
-    void taskFinished(bool success);
+    void taskFinished(bool success, QString exitString);
     void allFinished();
 
 private slots:

@@ -2,8 +2,8 @@
 [Desktop Entry]
 Encoding=UTF-8
 Name=QtSyncR
-GenericName=Data Backup Utility
-Comment=Qt-based tool for synchronizing files and folders, using RSync.
+GenericName=File Backup Utility
+Comment=File Backup Utility
 Exec=QtSyncR %U
 Temrinal=false
 Type=Application

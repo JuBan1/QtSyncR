@@ -40,6 +40,10 @@ void SyncProcess::forceCancel()
 
 void readOutputString(const QString line, long& mib, QString& perc, QString& speed, QString& time) {
     auto parts = line.split(' ', QString::SkipEmptyParts);
+
+    if (parts.isEmpty())
+        return;
+
     auto byteString = parts[0].remove(',');
     mib = byteString.toLong() / 1024 / 1024;
     perc = parts[1];
@@ -71,16 +75,44 @@ void SyncProcess::onReadStandardOoutput()
     m_timer.setRemainingTime(1000);
 }
 
+// Taken from man rsync
+const char* rsyncExitCodeToString(int code) {
+    switch(code) {
+    case 0: return "Success";
+    case 1: return "Syntax or usage error";
+    case 2: return "Protocol incompatibility";
+    case 3: return "Errors selecting input/output files, dirs";
+    case 4: return "Requested action not supported";
+    case 5: return "Error starting client-server protocol";
+    case 6: return "Daemon unable to append to log-file";
+    case 10: return "Error in socket I/O";
+    case 11: return "Error in file I/O";
+    case 12: return "Error in rsync protocol data stream";
+    case 13: return "Errors with program diagnostics";
+    case 14: return "Error in IPC code";
+    case 20: return "Received SIGUSR1 or SIGINT";
+    case 21: return "Some error returned by waitpid()";
+    case 22: return "Error allocating core memory buffers";
+    case 23: return "Partial transfer due to error";
+    case 24: return "Partial transfer due to vanished source files";
+    case 25: return "The --max-delete limit stopped deletions";
+    case 30: return "Timeout in data send/receive";
+    case 35: return "Timeout waiting for daemon connection";
+    default: return "Unknown exit code";
+    }
+}
+
 void SyncProcess::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     m_timer.setRemainingTime(0);
 
-    long mib;
+    long mib=0;
     QString perc, speed, time;
     readOutputString(m_lastOutput, mib, perc, speed, time);
     emit progress(mib, perc, speed, time);
 
-    emit taskFinished(exitCode == 0 && exitStatus == QProcess::NormalExit);
+    const QString exitString = exitStatus == QProcess::NormalExit ? rsyncExitCodeToString(exitCode) : "Process execution failed";
+    emit taskFinished(exitCode == 0 && exitStatus == QProcess::NormalExit, exitString);
 
     m_iterator++;
     startProcess();
@@ -88,7 +120,7 @@ void SyncProcess::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatu
 
 QStringList createRSyncSwitches(const Profile& profile) {
     QStringList switches;
-    switches << "--delete" << "-r" << "--info=progress2";
+    switches << "--delete" << "-rR" << "--info=progress2";
 
     if (profile.getFlag(Profile::FlagsDryRun)) switches << "-n";
     if (profile.getFlag(Profile::FlagArchive)) switches << "-a";
@@ -113,14 +145,15 @@ void SyncProcess::startProcess()
     QString absSrcPath = m_profile.getSrcPath();
     QString absDestPath = m_profile.getDestPath();
     QString absDirPath = *m_iterator;
-    QString relDirPath = absDirPath;
-    relDirPath.remove(0, absSrcPath.length());
-    QString absDirDestPath = absDestPath + relDirPath;
 
     // If rsyncing the root directory we need to append a '/' to prevent an additional directory layer
     // to be created. This is in line with how non-root dirs and files are synced.
     if (absSrcPath == absDirPath)
         absDirPath += '/';
 
-    m_process.start("rsync", createRSyncSwitches(m_profile) << absDirPath << absDirDestPath);
+    // Insert a marker so Rsync knows where the relative part of the file path starts.
+    // See: https://stackoverflow.com/questions/1636889/rsync-how-can-i-configure-it-to-create-target-directory-on-server
+    absDirPath.insert(absSrcPath.length(), "/.");
+
+    m_process.start("rsync", createRSyncSwitches(m_profile) << absDirPath << absDestPath);
 }

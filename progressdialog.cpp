@@ -89,10 +89,9 @@ void ProgressDialog::onTaskProgress(long megabytes, QString perc, QString speed,
     m_currentItem->setText( QString("%1MiB %2 %3 %4").arg(megabytes).arg(perc).arg(speed).arg(time) );
 }
 
-void ProgressDialog::onTaskFinished(bool success)
+void ProgressDialog::onTaskFinished(bool /*success*/, QString exitString)
 {
-    auto status = success ? " - Success" : " - Failed";
-    m_currentItem->setText( m_currentItem->text() + status );
+    m_currentItem->setText( m_currentItem->text() + " - " + exitString );
 
     m_currentItem = nullptr;
     updateStats();

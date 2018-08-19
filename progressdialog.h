@@ -21,7 +21,7 @@ private:
     void updateStats();
 
     void onTaskProgress(long megabytes, QString perc, QString speed, QString time);
-    void onTaskFinished(bool success);
+    void onTaskFinished(bool success, QString exitString);
     void onAllFinished();
 
     Ui::ProgressDialog *ui;
